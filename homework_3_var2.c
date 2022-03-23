@@ -1,75 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define ARR_MAX 1001
 
 int main()
 {
-  FILE *file;
-  char m[ARR_MAX];
+  FILE *files;
+  char m[100];
   char s = ' ';
-  int edge = 0, a = 0, vertice = 1;
-  int k, j, rez1, kol, d;
-  file = fopen("matrix_of_incendence198.txt", "r");
-  while (!feof(file))
+  int a = 0, b = 0, c = 1;
+  int e, j, kol, d;
+  files = fopen("matrix_of_incendence18.txt", "r"); // открываем файл с матрицей
+  while (!feof(files)) // цикл записи матрицы в массив
   {
     if (a == 0 && s == '\n')
     {
-      a = edge; // number of edges
+      a = b; // определяем число строк
     }
     if (s == '\n')
     {
-      vertice++; // number of vertices
+      c++; // определяем число столбцов
     }
     if (s == '1' || s == '0')
     {
-      m[edge] = s;
-      edge++;
+      m[b] = s;
+      b++;
     }
-    fscanf(file, "%c", &s);
+    fscanf(files, "%c", &s);
   }
-  printf("------------------\n");
-  if (a > ((vertice - 1) * (vertice - 2) / 2)) // graph connectivity theorem
+  if (a > ((c - 1) * (c - 2) / 2)) // проверяем связность графа по теореме о связности графа
   {
-    printf("graph - SVYAZNYI\n");
+    printf("connected graph\n");
   }
   else
   {
-    printf("graph - NESVYAZNYI\n");
+    printf("non connected graph\n\n");
   }
-  printf("------------------\n");
-  fclose(file);
-  file = fopen("graf.gv", "w");
-  fprintf(file, "graph Grah {\n");
-  for (j = 1; j <= a; j++)
+  fclose(files); // закрываем файл
+  files = fopen("graf.gv", "w"); // создаем новый файл куда будет записывать список смежности
+  fprintf(files, "graph Grah {\n");
+  for (j = 1; j <= a; j++) // двойной цикл для вывода списка смежности
   {
     kol = 0;
-    for (k = j; k <= edge; k++)
+    for (e = j; e <= b; e++)
     {
-      if (m[k - 1] == '1')
+      if (m[e - 1] == '1')
       {
         if (kol > 0)
         {
-          printf("%d\n", k / (a + 1) + 1);
-          fprintf(file, "%d;\n", k / (a + 1) + 1);
+          printf("%d\n", e / (a + 1) + 1);
+          fprintf(files, "%d;\n", e / (a + 1) + 1);
           break;
         }
         if (kol == 0)
         {
           kol++;
-          printf("%d -- ", k / (a + 1) + 1);
-          fprintf(file, "%d -- ", k / (a + 1) + 1);
+          printf("%d -- ", e / (a + 1) + 1);
+          fprintf(files, "%d -- ", e / (a + 1) + 1);
         }
       }
-      k += a - 1;
+      e += a - 1;
     }
   }
-  for (d = 1; d <= vertice; d++)
+  for (d = 1; d <= c; d++)
   {
-    fprintf(file, "%d;\n", d);
+    fprintf(files, "%d;\n", d);
   }
 
-  fprintf(file, "}");
-  fclose(file);
-  system("dot graf.gv -Tpng -o graf.png");
-  system("graf.png");
+  fprintf(files, "}");
+  fclose(files);
+  system("dot graf.gv -Tpng -o graph.png"); // через систему вызываем graphviz которые преобразует наш список смежности в граф в формате картинки
+  system("graph.png"); // открываем картинку с графом
 }
