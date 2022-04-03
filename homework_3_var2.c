@@ -1,72 +1,86 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define ARR_MAX 1001
 
 int main()
 {
-  FILE *files;
-  char m[100];
-  char s = ' ';
-  int a = 0, b = 0, c = 1;
-  int e, j, kol, d;
-  files = fopen("matrix_of_incendence18.txt", "r"); // открываем файл с матрицей
-  while (!feof(files)) // цикл записи матрицы в массив
-  {
-    if (a == 0 && s == '\n')
+    FILE *file = fopen("matrix_of_incendence18.txt", "r");
+    char arr[ARR_MAX][ARR_MAX], s, conn = '"';
+    int line = 1, ver = 0, reb = 0, max_len = 0;
+    // -----------------------------------------
+    while (!feof(file)) // запись матрицы из файла в двумерный массив
     {
-      a = b; // определяем число строк
-    }
-    if (s == '\n')
-    {
-      c++; // определяем число столбцов
-    }
-    if (s == '1' || s == '0')
-    {
-      m[b] = s;
-      b++;
-    }
-    fscanf(files, "%c", &s);
-  }
-  if (a > ((c - 1) * (c - 2) / 2)) // проверяем связность графа по теореме о связности графа
-  {
-    printf("connected graph\n");
-  }
-  else
-  {
-    printf("non connected graph\n\n");
-  }
-  fclose(files); // закрываем файл
-  files = fopen("graf.gv", "w"); // создаем новый файл куда будет записывать список смежности
-  fprintf(files, "graph Grah {\n");
-  for (j = 1; j <= a; j++) // двойной цикл для вывода списка смежности
-  {
-    kol = 0;
-    for (e = j; e <= b; e++)
-    {
-      if (m[e - 1] == '1')
-      {
-        if (kol > 0)
+        fscanf(file, "%c", &s);
+        if (s != ' ' && s != '\n' && s != '\0')
         {
-          printf("%d\n", e / (a + 1) + 1);
-          fprintf(files, "%d;\n", e / (a + 1) + 1);
-          break;
+            arr[line][ver] = s;
+            ver++;
         }
-        if (kol == 0)
+        else if (s == '\n')
         {
-          kol++;
-          printf("%d -- ", e / (a + 1) + 1);
-          fprintf(files, "%d -- ", e / (a + 1) + 1);
+            line++;
+            max_len = ver;
+            ver = 0;
         }
-      }
-      e += a - 1;
     }
-  }
-  for (d = 1; d <= c; d++)
-  {
-    fprintf(files, "%d;\n", d);
-  }
-
-  fprintf(files, "}");
-  fclose(files);
-  system("dot graf.gv -Tpng -o graph.png"); // через систему вызываем graphviz которые преобразует наш список смежности в граф в формате картинки
-  system("graph.png"); // открываем картинку с графом
+    arr[line][max_len] = '\0';
+    fclose(file);
+    file = fopen("graph.gv", "w");
+    fprintf(file, "graph Grah {\n");
+    printf("------------------\n");
+    printf("Your matrix:\n");
+    for (int a = 0; a <= line; a++)
+    {
+        int c = a + 1;
+        for (int b = 0; b <= ver; b++)
+        {
+            printf("%c ", arr[a][b]);
+            if (arr[a][b] == '1' && arr[c][b] == '1')
+            {
+                reb++;
+            }
+        }
+        printf("\n");
+    }
+    printf("------------------\n");
+    printf("Adjacency list:\n");
+    for (int d = 1; d <= line; d++)
+    {
+        fprintf(file, "%d\n", d);
+        printf("%d\n", d);
+    }
+    for (int j = 0; j <= line; j++)
+    {
+        for (int k = 0; k <= ver; k++)
+        {
+            if (arr[j][k] == '1')
+            {
+                for (int f = j; f <= line; f++)
+                {
+                    if (arr[f][k] == '1' && f != j)
+                    {
+                        printf("%d -- %d\n", j, f);
+                        fprintf(file, "%d -- %d\n", j, f);
+                    }
+                }
+            }
+        }
+    }
+    printf("------------------\n");
+    if (reb >= ((line - 1) * (line - 2) / 2)) // graph connectivity theorem
+    {
+        printf("graph - connected\n");
+        fprintf(file, "0 [label = %c connected %c]\n", conn, conn);
+    }
+    else
+    {
+        printf("graph -  not connected\n");
+        fprintf(file, "0 [label = %c not connected %c]\n", conn, conn);
+    }
+    printf("------------------\n");
+    fprintf(file, "}");
+    fclose(file);
+    system("dot graph.gv -Tpng -o graph.png");
+    system("graph.png");
+    return 0;
 }
